@@ -1891,3 +1891,8 @@ html.lenis body {
       padding: 20px 18px
    }
 }
+
+.nl-wrap,
+#nl-wrap {
+   display: none !important
+}

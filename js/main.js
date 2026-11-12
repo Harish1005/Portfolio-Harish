@@ -160,4 +160,15 @@ window.SHEET_URL = 'https://script.google.com/macros/s/AKfycbzZE7Ox8vtw0feca_Kyb
          cal.classList.remove('ld'); draw('last')
       }).catch(function () { cal.classList.remove('ld'); card.classList.add('err'); tt.textContent = "Contributions couldn't load right now." });
    })();
+
+   // footer view count: counts once per browser tab session, then only reads (stored by google-sheet-names.gs)
+   (function () {
+      var el = d.querySelector('.vc'); if (!el || !window.SHEET_URL || !window.fetch) return;
+      var seen = false; try { seen = sessionStorage.getItem('pv') === '1' } catch (e) { }
+      fetch(window.SHEET_URL + '?views=' + (seen ? 0 : 1)).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json() }).then(function (j) {
+         var n = +j.views; if (!isFinite(n) || n < 1) return;
+         try { sessionStorage.setItem('pv', '1') } catch (e) { }
+         el.querySelector('b').textContent = n.toLocaleString('en-IN'); el.lastChild.textContent = n === 1 ? ' view' : ' views'; el.hidden = false
+      }).catch(function () { });
+   })();
 })();

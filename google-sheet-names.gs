@@ -46,9 +46,28 @@ function doPost(e) {
   return reply_('ok');
 }
 
-// Opening the web-app URL in a browser shows this, which is a quick way to check the deployment.
-function doGet() {
-  return reply_('Portfolio name logger is running.');
+// Footer view counter. The site calls ?views=1 to add a view and ?views=0 to only read it.
+// The total is kept in Project Settings → Script properties as "views"; edit it there to change the number.
+// Opening the web-app URL with no ?views shows the status message, which is a quick way to check the deployment.
+function doGet(e) {
+  var p = (e && e.parameter) || {};
+  if (p.views == null) return reply_('Portfolio name logger is running.');
+
+  var props = PropertiesService.getScriptProperties();
+  var views = Number(props.getProperty('views') || 0);
+  if (p.views === '1') {
+    var lock = LockService.getScriptLock();
+    if (lock.tryLock(5000)) {
+      try {
+        views = Number(props.getProperty('views') || 0) + 1;
+        props.setProperty('views', String(views));
+      } finally {
+        lock.releaseLock();
+      }
+    }
+  }
+  return ContentService.createTextOutput(JSON.stringify({ views: views }))
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
 function sheet_() {

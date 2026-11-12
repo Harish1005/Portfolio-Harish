@@ -1341,7 +1341,38 @@ footer {
 
 .cr {
    margin-top: 32px;
-   font-size: 13px
+   font-size: 13px;
+   display: flex;
+   flex-wrap: wrap;
+   justify-content: space-between;
+   align-items: center;
+   gap: 8px 24px
+}
+
+.vc {
+   display: inline-flex;
+   align-items: center;
+   gap: 6px;
+   font-variant-numeric: tabular-nums
+}
+
+.vc[hidden] {
+   display: none
+}
+
+.vc svg {
+   width: 15px;
+   height: 15px;
+   fill: none;
+   stroke: currentColor;
+   stroke-width: 1.8;
+   stroke-linecap: round;
+   stroke-linejoin: round
+}
+
+.vc b {
+   font-weight: 600;
+   color: var(--fg)
 }
 
 .rv {

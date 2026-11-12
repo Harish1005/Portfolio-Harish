@@ -162,9 +162,15 @@ window.SHEET_URL = 'https://script.google.com/macros/s/AKfycbzZE7Ox8vtw0feca_Kyb
    })();
 
    // footer view count: counts once per browser tab session, then only reads (stored by google-sheet-names.gs)
+   // Your own visits: open the site once with ?me at the end of the address and that browser stops counting; ?me=off undoes it.
    (function () {
       var el = d.querySelector('.vc'); if (!el || !window.SHEET_URL || !window.fetch) return;
-      var seen = false; try { seen = sessionStorage.getItem('pv') === '1' } catch (e) { }
+      var seen = false, me = false, q = location.search.match(/[?&]me(?:=([^&]*))?(?:&|$)/);
+      try {
+         if (q) { if (q[1] === 'off') localStorage.removeItem('pv-me'); else localStorage.setItem('pv-me', '1'); history.replaceState(null, '', location.pathname + location.hash) }
+         me = localStorage.getItem('pv-me') === '1'; seen = me || sessionStorage.getItem('pv') === '1'
+      } catch (e) { }
+      if (me) el.title = 'Your visits on this browser are not counted';
       fetch(window.SHEET_URL + '?views=' + (seen ? 0 : 1)).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json() }).then(function (j) {
          var n = +j.views; if (!isFinite(n) || n < 1) return;
          try { sessionStorage.setItem('pv', '1') } catch (e) { }

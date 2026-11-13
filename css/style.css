@@ -271,6 +271,7 @@ header {
 
 .hp {
    position: relative;
+   margin-top: 48px;
    min-height: clamp(440px, 36vw, 480px);
    background: var(--hero);
    border: 1px solid var(--ln);

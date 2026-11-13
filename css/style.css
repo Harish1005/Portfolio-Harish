@@ -1684,6 +1684,16 @@ html.lenis body {
 
 .gcd {
    position: relative;
+   --sf: #161b22;
+   --fg: #f0f6fc;
+   --mu: #9da7b3;
+   --ln: #30363d;
+   --bg: #161b22;
+   --g0: #30363d;
+   --g1: #0e4429;
+   --g2: #006d32;
+   --g3: #26a641;
+   --g4: #39d353;
    background: var(--sf);
    border: 1px solid var(--ln);
    border-radius: var(--r);

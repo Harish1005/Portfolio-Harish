@@ -91,12 +91,20 @@ h1 {
    animation: up .9s cubic-bezier(.2, .8, .2, 1) both
 }
 
+/* "with Harish M H" stays on one line; it is ~8.1em wide, so size the
+   heading to its column (12cqi) so that line always fits. */
+.hh h1 {
+   font-size: min(76px, 12cqi)
+}
+
+h1 .nw {
+   white-space: nowrap
+}
+
 h1 .ac {
-   display: block;
    font: 400 1em/1.1 Aclonica, Manrope, sans-serif;
    letter-spacing: -.01em;
-   background: linear-gradient(transparent 72%, var(--ac) 72%, var(--ac) 90%, transparent 90%);
-   width: fit-content
+   background: linear-gradient(transparent 72%, var(--ac) 72%, var(--ac) 90%, transparent 90%)
 }
 
 @keyframes up {
@@ -121,7 +129,7 @@ h3 {
 }
 
 .wrap {
-   max-width: 1160px;
+   max-width: 1200px;
    margin: 0 auto;
    padding: 0 28px;
    position: relative;
@@ -236,6 +244,7 @@ header {
 }
 
 .hh .l {
+   container-type: inline-size;
    display: flex;
    flex-direction: column;
    gap: 24px
@@ -1373,6 +1382,11 @@ footer {
 .vc b {
    font-weight: 600;
    color: var(--fg)
+}
+
+.pn {
+   margin: 10px 0 0;
+   font-size: 12px
 }
 
 .rv {

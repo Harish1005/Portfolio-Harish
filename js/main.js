@@ -171,10 +171,67 @@ window.SHEET_URL = 'https://script.google.com/macros/s/AKfycbzZE7Ox8vtw0feca_Kyb
          me = localStorage.getItem('pv-me') === '1'; seen = me || sessionStorage.getItem('pv') === '1'
       } catch (e) { }
       if (me) el.title = 'Your visits on this browser are not counted';
-      fetch(window.SHEET_URL + '?views=' + (seen ? 0 : 1)).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json() }).then(function (j) {
-         var n = +j.views; if (!isFinite(n) || n < 1) return;
-         try { sessionStorage.setItem('pv', '1') } catch (e) { }
-         el.querySelector('b').textContent = n.toLocaleString('en-IN'); el.lastChild.textContent = n === 1 ? ' view' : ' views'; el.hidden = false
-      }).catch(function () { });
+      var U = window.SHEET_URL, nv = 1, vid = '';
+      if (!me) { if (seen) { try { vid = sessionStorage.getItem('pv-id') || '' } catch (e) { } } else vid = Date.now().toString(36) + Math.random().toString(36).slice(2, 8) }
+      function pick(list, s, fb) { for (var i = 0; i < list.length; i++) if (list[i][0].test(s)) return list[i][1]; return fb }
+      function catName() { try { return localStorage.getItem('catName') || '' } catch (e) { return '' } }
+      function json(res) { if (!res.ok) throw new Error(res.status); return res.json() }
+      function show(j) {
+         var n = +(j && j.views); if (!isFinite(n) || n < 1) return false;
+         el.querySelector('b').textContent = n.toLocaleString('en-IN'); el.lastChild.textContent = n === 1 ? ' view' : ' views'; el.hidden = false; return true
+      }
+      if (seen) fetch(U + '?views=0').then(json).then(show).catch(function () { });
+      else {
+         // a counted visit also sends what the Visits tab records: name (if typed before), where they came from, device, location
+         var ua = navigator.userAgent, touchMac = /Macintosh/.test(ua) && navigator.maxTouchPoints > 1, tz = '', host = '';
+         var br = pick([[/LinkedInApp/, 'LinkedIn app'], [/Instagram/, 'Instagram app'], [/FBAN|FBAV|FB_IAB/, 'Facebook app'], [/Edg(A|iOS)?\//, 'Edge'], [/OPR\/|Opera/, 'Opera'], [/SamsungBrowser/, 'Samsung Internet'], [/Firefox|FxiOS/, 'Firefox'], [/Chrome\/|CriOS/, 'Chrome'], [/Safari/, 'Safari']], ua, 'Other');
+         var os = pick([[/Android/, 'Android'], [/iPhone|iPod/, 'iOS'], [/iPad/, 'iPadOS'], [/CrOS/, 'ChromeOS'], [/Windows/, 'Windows'], [/Macintosh|Mac OS X/, touchMac ? 'iPadOS' : 'macOS'], [/Linux/, 'Linux']], ua, 'Other');
+         var dev = /iPad|Tablet/.test(ua) || touchMac || (/Android/.test(ua) && !/Mobile/.test(ua)) ? 'Tablet' : /Mobi|iPhone|iPod|Android/.test(ua) ? 'Phone' : 'Desktop';
+         var utm = location.search.match(/[?&]utm_source=([^&]*)/), from = '';
+         if (utm) { try { from = decodeURIComponent(utm[1].replace(/\+/g, ' ')) } catch (e) { from = utm[1] } }
+         else {
+            try { var ref = new URL(d.referrer); host = (ref.hostname || ref.host).replace(/^www\./, '') } catch (e) { }
+            if (host && host !== location.hostname.replace(/^www\./, '')) from = pick([[/linkedin|lnkd/, 'LinkedIn'], [/android\.gm|mail\.google/, 'Gmail'], [/google/, 'Google'], [/instagram/, 'Instagram'], [/facebook|^fb\./, 'Facebook'], [/github/, 'GitHub'], [/whatsapp/, 'WhatsApp'], [/bing/, 'Bing'], [/^t\.co$|twitter|^x\.com$/, 'X (Twitter)']], host, host);
+            else from = / app$/.test(br) ? br.replace(/ app$/, '') : 'Direct / unknown';
+         }
+         try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '' } catch (e) { }
+         try { nv = (+localStorage.getItem('pv-n') || 0) + 1 } catch (e) { }
+         var info = { views: 1, vid: vid, vn: nv, name: catName(), from: from, dev: dev, os: os, br: br, scr: screen.width + ' × ' + screen.height, lang: navigator.language || '', tz: tz };
+         // city, region, country, internet provider and IP from GeoJS (free, no key); the visit is still logged without them after 2.5 s
+         Promise.race([fetch('https://get.geojs.io/v1/ip/geo.json').then(json), new Promise(function (ok) { setTimeout(ok, 2500, {}) })]).catch(function () { return {} }).then(function (g) {
+            g = g || {}; info.city = g.city || ''; info.region = g.region || ''; info.country = g.country || ''; info.isp = g.organization_name || ''; info.ip = g.ip || '';
+            return fetch(U + '?' + new URLSearchParams(info).toString().replace(/\+/g, '%20'))
+         }).then(json).then(function (j) {
+            if (show(j)) try { localStorage.setItem('pv-n', nv); sessionStorage.setItem('pv', '1'); sessionStorage.setItem('pv-id', vid) } catch (e) { }
+         }).catch(function () { });
+      }
+
+      // what the visitor does, saved to their Visits row whenever the tab is hidden or closed:
+      // time on site (while the tab is visible), how far they scrolled, sections seen, links clicked, and their name if they type one
+      if (!vid) return;
+      var A = { id: vid, t: 0, s: 0, sec: [], clk: [] }, t0 = d.visibilityState === 'visible' ? Date.now() : 0, last = '';
+      try { var o = JSON.parse(sessionStorage.getItem('pv-act') || 'null'); if (o && o.id === vid && o.sec && o.clk) A = o } catch (e) { }
+      function add(list, v) { if (v && list.indexOf(v) < 0 && list.length < 40) list.push(v) }
+      function flush() {
+         if (t0) { var now = Date.now(); A.t += now - t0; t0 = now }
+         try { sessionStorage.setItem('pv-act', JSON.stringify(A)) } catch (e) { }
+         var data = { type: 'visit', vid: vid, name: catName(), time: Math.round(A.t / 1000), scroll: A.s, sections: A.sec.join(', '), clicks: A.clk.join(', ') }, key = JSON.stringify(data);
+         if (key === last) return; last = key;
+         fetch(U, { method: 'POST', mode: 'no-cors', keepalive: true, body: new URLSearchParams(data) }).catch(function () { last = '' })
+      }
+      addEventListener('scroll', function () { var h = d.documentElement.scrollHeight - innerHeight, p = h > 0 ? Math.round(Math.min(1, scrollY / h) * 100) : 100; if (p > A.s) A.s = p }, { passive: true });
+      if (window.IntersectionObserver) {
+         var io = new IntersectionObserver(function (es) { es.forEach(function (x) { if (x.isIntersecting) { var id = x.target.id; add(A.sec, id.charAt(0).toUpperCase() + id.slice(1)); io.unobserve(x.target) } }) }, { rootMargin: '-45% 0px -45% 0px' });
+         [].forEach.call(d.querySelectorAll('section[id]'), function (s) { io.observe(s) });
+      }
+      d.addEventListener('click', function (e) {
+         var a = e.target.closest && e.target.closest('a[href]'); if (!a) return;
+         var h = a.getAttribute('href'), card = a.closest('article.sp'), t = card && card.querySelector('h3');
+         if (/^#/.test(h)) return;
+         add(A.clk, t && /^https?:/.test(h) ? 'Project: ' + t.textContent.trim() : /^mailto:/.test(h) ? 'Email' : /^tel:/.test(h) ? 'Phone call'
+            : pick([[/linkedin/, 'LinkedIn'], [/github/, 'GitHub'], [/instagram/, 'Instagram'], [/wa\.me|whatsapp/, 'WhatsApp']], a.hostname, a.hostname.replace(/^www\./, '')))
+      }, true);
+      d.addEventListener('visibilitychange', function () { if (d.visibilityState === 'hidden') { flush(); t0 = 0 } else t0 = Date.now() });
+      addEventListener('pagehide', flush);
    })();
 })();

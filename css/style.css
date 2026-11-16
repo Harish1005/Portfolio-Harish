@@ -30,10 +30,61 @@
    --g2: #8FCFA9;
    --g3: #4DAE76;
    --g4: #22784A;
+   --ih: #fff;
+   --mk: color-mix(in srgb, #171717 78%, transparent);
    color-scheme: light;
    box-sizing: border-box;
    padding-top: env(safe-area-inset-top, 0px);
    padding-bottom: env(safe-area-inset-bottom, 0px)
+}
+
+/* Dark theme. <html data-theme> is set by the theme switch (and the inline script in <head>):
+   no attribute = follow the device setting, "light" or "dark" = the visitor's pick.
+   The two blocks below hold the same values; keep them in sync. */
+@media (prefers-color-scheme: dark) {
+   :root:not([data-theme="light"]) {
+      --bg: #131312;
+      --fg: #EEECE7;
+      --mu: #A29D95;
+      --sf: #1C1B19;
+      --ln: #302E2A;
+      --ac: #8468D4;
+      --a1: color-mix(in srgb, var(--p1) 20%, var(--bg));
+      --a2: color-mix(in srgb, var(--p2) 20%, var(--bg));
+      --a3: color-mix(in srgb, var(--p3) 20%, var(--bg));
+      --a4: color-mix(in srgb, var(--p4) 20%, var(--bg));
+      --a5: color-mix(in srgb, var(--p5) 20%, var(--bg));
+      --a6: color-mix(in srgb, var(--p6) 20%, var(--bg));
+      --hero: color-mix(in srgb, var(--p4) 14%, var(--bg));
+      --ih: var(--fg);
+      color-scheme: dark
+   }
+}
+
+:root[data-theme="dark"] {
+   --bg: #131312;
+   --fg: #EEECE7;
+   --mu: #A29D95;
+   --sf: #1C1B19;
+   --ln: #302E2A;
+   --ac: #8468D4;
+   --a1: color-mix(in srgb, var(--p1) 20%, var(--bg));
+   --a2: color-mix(in srgb, var(--p2) 20%, var(--bg));
+   --a3: color-mix(in srgb, var(--p3) 20%, var(--bg));
+   --a4: color-mix(in srgb, var(--p4) 20%, var(--bg));
+   --a5: color-mix(in srgb, var(--p5) 20%, var(--bg));
+   --a6: color-mix(in srgb, var(--p6) 20%, var(--bg));
+   --hero: color-mix(in srgb, var(--p4) 14%, var(--bg));
+   --ih: var(--fg);
+   color-scheme: dark
+}
+
+/* switching themes recolours everything at once instead of element by element */
+.notr,
+.notr *,
+.notr *::before,
+.notr *::after {
+   transition: none !important
 }
 
 *,
@@ -186,7 +237,8 @@ header {
 
 .hr {
    display: flex;
-   gap: 8px
+   align-items: center;
+   gap: 10px
 }
 
 .btn {
@@ -227,6 +279,67 @@ header {
 
 .mb {
    display: none
+}
+
+/* Theme switch: Light / Dark / System */
+.tm {
+   display: inline-flex;
+   gap: 2px;
+   padding: 3px;
+   border: 1px solid var(--ln);
+   border-radius: 99px;
+   background: var(--sf)
+}
+
+.tm button {
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   gap: 6px;
+   min-width: 34px;
+   height: 34px;
+   padding: 0 8px;
+   border: 0;
+   border-radius: 99px;
+   background: none;
+   color: var(--mu);
+   font: 600 14px/1 Manrope, sans-serif;
+   cursor: pointer;
+   transition: background .2s, color .2s
+}
+
+.tm button:hover {
+   background: var(--bg);
+   color: var(--fg)
+}
+
+.tm svg {
+   width: 18px;
+   height: 18px;
+   flex: none;
+   fill: none;
+   stroke: currentColor;
+   stroke-width: 1.8;
+   stroke-linecap: round;
+   stroke-linejoin: round
+}
+
+/* the picked option is read from <html data-theme>, so it is right from the first paint */
+:root:not([data-theme]) .tm [data-t="system"],
+:root[data-theme="light"] .tm [data-t="light"],
+:root[data-theme="dark"] .tm [data-t="dark"] {
+   background: var(--p2);
+   color: #171717
+}
+
+/* header version: icons only, names kept for screen readers */
+.hr .tm span {
+   position: absolute;
+   width: 1px;
+   height: 1px;
+   overflow: hidden;
+   clip-path: inset(50%);
+   white-space: nowrap
 }
 
 .hero {
@@ -480,8 +593,9 @@ header {
 }
 
 .cmd button:hover {
-   background: var(--hv);
-   border-color: var(--hv);
+   background: var(--hc);
+   border-color: var(--hc);
+   color: #171717;
    transform: translateY(-2px)
 }
 
@@ -734,7 +848,7 @@ section {
 }
 
 .grid>div:hover .ic {
-   background: #fff
+   background: var(--ih)
 }
 
 .aside {
@@ -1085,28 +1199,35 @@ section {
    color: var(--mp)
 }
 
+/* --hv: card surface tint (pastel in light, deep tint in dark); --hc: the pastel itself, for dark-ink chips */
 .cy>*:nth-child(6n+1) {
-   --hv: var(--a1)
+   --hv: var(--a1);
+   --hc: var(--p1)
 }
 
 .cy>*:nth-child(6n+2) {
-   --hv: var(--a2)
+   --hv: var(--a2);
+   --hc: var(--p2)
 }
 
 .cy>*:nth-child(6n+3) {
-   --hv: var(--a3)
+   --hv: var(--a3);
+   --hc: var(--p3)
 }
 
 .cy>*:nth-child(6n+4) {
-   --hv: var(--a4)
+   --hv: var(--a4);
+   --hc: var(--p4)
 }
 
 .cy>*:nth-child(6n+5) {
-   --hv: var(--a5)
+   --hv: var(--a5);
+   --hc: var(--p5)
 }
 
 .cy>*:nth-child(6n) {
-   --hv: var(--a6)
+   --hv: var(--a6);
+   --hc: var(--p6)
 }
 
 .ix {
@@ -1130,7 +1251,7 @@ section {
    stroke-linejoin: round;
    padding: 10px;
    border-radius: 12px;
-   background: var(--hv);
+   background: var(--hc);
    margin: 0 0 18px
 }
 
@@ -1550,6 +1671,22 @@ html.lenis body {
       flex: 1
    }
 
+   #mn .tw {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px
+   }
+
+   #mn .tm {
+      display: flex
+   }
+
+   #mn .tm button {
+      flex: 1;
+      height: 44px
+   }
+
    html {
       scroll-padding-top: calc(env(safe-area-inset-top, 0px) + var(--hh) + 16px)
    }
@@ -1911,7 +2048,7 @@ html.lenis body {
 
 .gyr button:hover small,
 .gyr button[aria-pressed="true"] small {
-   color: var(--mp)
+   color: var(--mk)
 }
 
 @media(max-width:1100px) {

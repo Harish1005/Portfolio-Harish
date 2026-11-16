@@ -284,8 +284,8 @@ header {
 /* Theme switch: Light / Dark / System */
 .tm {
    display: inline-flex;
-   gap: 2px;
-   padding: 3px;
+   gap: 1px;
+   padding: 2px;
    border: 1px solid var(--ln);
    border-radius: 99px;
    background: var(--sf)
@@ -296,9 +296,9 @@ header {
    align-items: center;
    justify-content: center;
    gap: 6px;
-   min-width: 34px;
-   height: 34px;
-   padding: 0 8px;
+   min-width: 24px;
+   height: 24px;
+   padding: 0 5px;
    border: 0;
    border-radius: 99px;
    background: none;
@@ -314,12 +314,12 @@ header {
 }
 
 .tm svg {
-   width: 18px;
-   height: 18px;
+   width: 14px;
+   height: 14px;
    flex: none;
    fill: none;
    stroke: currentColor;
-   stroke-width: 1.8;
+   stroke-width: 2;
    stroke-linecap: round;
    stroke-linejoin: round
 }
@@ -1679,12 +1679,20 @@ html.lenis body {
    }
 
    #mn .tm {
-      display: flex
+      display: flex;
+      gap: 2px;
+      padding: 3px
    }
 
    #mn .tm button {
       flex: 1;
       height: 44px
+   }
+
+   #mn .tm svg {
+      width: 18px;
+      height: 18px;
+      stroke-width: 1.8
    }
 
    html {

@@ -106,7 +106,7 @@ window.SHEET_URL = 'https://script.google.com/macros/s/AKfycbzZE7Ox8vtw0feca_Kyb
    (function () {
       var box = d.getElementById('github'); if (!box) return;
       var USER = 'Harish1005', cal = box.querySelector('.gcal'), sc = box.querySelector('.gsc'), tt = box.querySelector('.gtt'), yr = box.querySelector('.gyr'), tip = box.querySelector('.gtip'), card = box.querySelector('.gcd'), sm = d.getElementById('gha'),
-         MO = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], map = {}, tot = {};
+         MO = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], map = {}, tot = {}, cur = 'last', last = '', busy = false;
       function ymd(t) { return t.getFullYear() + '-' + ('0' + (t.getMonth() + 1)).slice(-2) + '-' + ('0' + t.getDate()).slice(-2) }
       function add(t, n) { return new Date(t.getFullYear(), t.getMonth(), t.getDate() + n) }
       function today() { var n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()) }
@@ -116,8 +116,10 @@ window.SHEET_URL = 'https://script.google.com/macros/s/AKfycbzZE7Ox8vtw0feca_Kyb
       function range(v) { var t = today(); return v === 'last' ? { s: add(t, -t.getDay() - 364), e: t } : { s: new Date(+v, 0, 1), e: new Date(+v, 11, 31) } }
       function sum(v) { var r = range(v), t = today(), n = 0; for (var x = r.s; x <= r.e && x <= t; x = add(x, 1)) { var c = map[ymd(x)]; if (c) n += c[0] } return n }
       function hide() { tip.classList.remove('on') }
-      function draw(v) {
-         var r = range(v), t = today(), g = add(r.s, -r.s.getDay()), wk = Math.floor(Math.round((r.e - g) / 864e5) / 7) + 1, h = '', ml = [], pm = -1;
+      // keep = background refresh: stay on the user's scroll position instead of jumping to the latest days
+      function draw(v, keep) {
+         var r = range(v), t = today(), g = add(r.s, -r.s.getDay()), wk = Math.floor(Math.round((r.e - g) / 864e5) / 7) + 1, h = '', ml = [], pm = -1, sl = sc.scrollLeft;
+         cur = v;
          cal.style.setProperty('--wk', wk); h += '<span class="gdb"></span>';
          ['Mon', 'Wed', 'Fri'].forEach(function (n, i) { h += '<span class="gd" style="grid-row:' + (i * 2 + 3) + '">' + n + '</span>' });
          for (var w = 0; w < wk; w++) {
@@ -136,6 +138,7 @@ window.SHEET_URL = 'https://script.google.com/macros/s/AKfycbzZE7Ox8vtw0feca_Kyb
          cal.setAttribute('aria-label', 'GitHub contribution calendar: ' + phrase(n, v));
          [].forEach.call(yr.children, function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-v') === v ? 'true' : 'false') });
          // on narrow screens the calendar scrolls sideways: show the latest days first for the current period
+         if (keep) { sc.scrollLeft = sl; return }
          sc.scrollLeft = 0;
          if (v === 'last' || +v === t.getFullYear()) { var lc = cal.querySelector('i:last-of-type'); if (lc) sc.scrollLeft += lc.getBoundingClientRect().right - sc.getBoundingClientRect().right + 16 }
       }
@@ -151,14 +154,28 @@ window.SHEET_URL = 'https://script.google.com/macros/s/AKfycbzZE7Ox8vtw0feca_Kyb
       sc.addEventListener('scroll', hide, { passive: true });
       d.addEventListener('pointerdown', function (e) { if (!cal.contains(e.target)) hide() });
       draw('last');
-      fetch('https://github-contributions-api.jogruber.de/v4/' + USER + '?y=all').then(function (r) { if (!r.ok) throw new Error(r.status); return r.json() }).then(function (j) {
-         (j.contributions || []).forEach(function (c) { map[c.date] = [c.count, c.level]; var y = c.date.slice(0, 4); tot[y] = (tot[y] || 0) + c.count });
-         var ys = Object.keys(tot).sort().reverse(), all = 0; if (!ys.length) throw new Error('empty');
-         ys.forEach(function (y) { all += tot[y] });
-         btn('last', 'Last year', sum('last')); ys.forEach(function (y) { btn(y, y, tot[y]) });
-         sm.textContent = num(all) + ' total since ' + ys[ys.length - 1];
-         cal.classList.remove('ld'); draw('last')
-      }).catch(function () { cal.classList.remove('ld'); card.classList.add('err'); tt.textContent = "Contributions couldn't load right now." });
+      // fetch now, then re-check every 10s while the tab is visible; only redraw when the data actually changed
+      function load() {
+         if (busy) return; busy = true;
+         fetch('https://github-contributions-api.jogruber.de/v4/' + USER + '?y=all', { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.text() }).then(function (s) {
+            if (s === last) return;
+            var j = JSON.parse(s), m = {}, ty = {};
+            (j.contributions || []).forEach(function (c) { m[c.date] = [c.count, c.level]; var y = c.date.slice(0, 4); ty[y] = (ty[y] || 0) + c.count });
+            var ys = Object.keys(ty).sort().reverse(), all = 0; if (!ys.length) throw new Error('empty');
+            var first = !last; last = s; map = m; tot = ty;
+            ys.forEach(function (y) { all += tot[y] });
+            yr.innerHTML = ''; btn('last', 'Last year', sum('last')); ys.forEach(function (y) { btn(y, y, tot[y]) });
+            sm.textContent = num(all) + ' total since ' + ys[ys.length - 1];
+            cal.classList.remove('ld'); card.classList.remove('err');
+            draw(cur === 'last' || tot[cur] != null ? cur : 'last', !first)
+         }).catch(function () {
+            // a failed background refresh keeps the last good calendar on screen
+            if (!last) { cal.classList.remove('ld'); card.classList.add('err'); tt.textContent = "Contributions couldn't load right now." }
+         }).then(function () { busy = false });
+      }
+      load();
+      setInterval(function () { if (!d.hidden) load() }, 10000);
+      d.addEventListener('visibilitychange', function () { if (!d.hidden) load() });
    })();
 
    // footer view count: counts once per browser tab session, then only reads (stored by google-sheet-names.gs)

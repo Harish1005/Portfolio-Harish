@@ -281,38 +281,9 @@ header {
    display: none
 }
 
-/* Theme switch: Light / Dark / System */
-.tm {
-   display: inline-flex;
-   gap: 1px;
-   padding: 2px;
-   border: 1px solid var(--ln);
-   border-radius: 99px;
-   background: var(--sf)
-}
-
-.tm button {
-   display: inline-flex;
-   align-items: center;
-   justify-content: center;
-   gap: 6px;
-   min-width: 24px;
-   height: 24px;
-   padding: 0 5px;
-   border: 0;
-   border-radius: 99px;
-   background: none;
-   color: var(--mu);
-   font: 600 14px/1 Manrope, sans-serif;
-   cursor: pointer;
-   transition: background .2s, color .2s
-}
-
-.tm button:hover {
-   background: var(--bg);
-   color: var(--fg)
-}
-
+/* Theme switch: Light / Dark / System.
+   Header: a small dropdown (.td). Mobile menu: a labelled segmented control (.tm). */
+.td svg,
 .tm svg {
    width: 14px;
    height: 14px;
@@ -324,22 +295,156 @@ header {
    stroke-linejoin: round
 }
 
-/* the picked option is read from <html data-theme>, so it is right from the first paint */
+.td {
+   position: relative
+}
+
+.tdb {
+   display: inline-flex;
+   align-items: center;
+   gap: 6px;
+   height: 30px;
+   padding: 0 9px 0 10px;
+   border: 1px solid var(--ln);
+   border-radius: 99px;
+   background: var(--sf);
+   color: var(--fg);
+   font: 600 13px/1 Manrope, sans-serif;
+   cursor: pointer;
+   transition: border-color .2s
+}
+
+.tdb:hover,
+.td.open .tdb {
+   border-color: color-mix(in srgb, var(--fg) 28%, var(--ln))
+}
+
+/* the button shows the current pick, read from <html data-theme> so it is right from the first paint */
+.tdb .tv {
+   display: none;
+   align-items: center;
+   gap: 6px
+}
+
+:root:not([data-theme]) .tdb [data-v="light"],
+:root[data-theme="dark"] .tdb [data-v="dark"],
+:root[data-theme="system"] .tdb [data-v="system"] {
+   display: inline-flex
+}
+
+.tdb .cv {
+   width: 12px;
+   height: 12px;
+   color: var(--mu);
+   transition: transform .2s
+}
+
+.td.open .cv {
+   transform: rotate(180deg)
+}
+
+.tdm {
+   position: absolute;
+   top: calc(100% + 6px);
+   right: 0;
+   min-width: 156px;
+   display: flex;
+   flex-direction: column;
+   gap: 2px;
+   padding: 5px;
+   background: var(--sf);
+   border: 1px solid var(--ln);
+   border-radius: 12px;
+   box-shadow: 0 16px 32px -12px rgba(0, 0, 0, .28), 0 2px 6px rgba(0, 0, 0, .06);
+   opacity: 0;
+   visibility: hidden;
+   transform: translateY(-4px);
+   transition: opacity .15s, transform .15s, visibility 0s .15s
+}
+
+.td.open .tdm {
+   opacity: 1;
+   visibility: visible;
+   transform: none;
+   transition: opacity .15s, transform .15s
+}
+
+.tdm button {
+   display: flex;
+   align-items: center;
+   gap: 10px;
+   width: 100%;
+   height: 36px;
+   padding: 0 10px;
+   border: 0;
+   border-radius: 8px;
+   background: none;
+   color: var(--fg);
+   font: 600 14px/1 Manrope, sans-serif;
+   text-align: left;
+   cursor: pointer
+}
+
+.tdm button:hover,
+.tdm button:focus-visible {
+   background: var(--bg)
+}
+
+.tdm button:focus-visible {
+   outline: 2px solid var(--ac);
+   outline-offset: -2px
+}
+
+.tdm button[aria-checked="true"] {
+   background: var(--a2)
+}
+
+.tdm .ck {
+   margin-left: auto;
+   visibility: hidden
+}
+
+.tdm button[aria-checked="true"] .ck {
+   visibility: visible
+}
+
+.tm {
+   display: flex;
+   gap: 2px;
+   padding: 3px;
+   border: 1px solid var(--ln);
+   border-radius: 99px;
+   background: var(--sf)
+}
+
+.tm button {
+   flex: 1;
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   gap: 6px;
+   height: 44px;
+   padding: 0 8px;
+   border: 0;
+   border-radius: 99px;
+   background: none;
+   color: var(--mu);
+   font: 600 14px/1 Manrope, sans-serif;
+   cursor: pointer;
+   transition: background .2s, color .2s
+}
+
+.tm svg {
+   width: 18px;
+   height: 18px;
+   stroke-width: 1.8
+}
+
 :root:not([data-theme]) .tm [data-t="light"],
 :root[data-theme="dark"] .tm [data-t="dark"],
 :root[data-theme="system"] .tm [data-t="system"] {
    background: var(--p2);
    color: #171717
-}
-
-/* header version: icons only, names kept for screen readers */
-.hr .tm span {
-   position: absolute;
-   width: 1px;
-   height: 1px;
-   overflow: hidden;
-   clip-path: inset(50%);
-   white-space: nowrap
 }
 
 .hero {
@@ -1676,23 +1781,6 @@ html.lenis body {
       flex-direction: column;
       gap: 8px;
       margin-top: 8px
-   }
-
-   #mn .tm {
-      display: flex;
-      gap: 2px;
-      padding: 3px
-   }
-
-   #mn .tm button {
-      flex: 1;
-      height: 44px
-   }
-
-   #mn .tm svg {
-      width: 18px;
-      height: 18px;
-      stroke-width: 1.8
    }
 
    html {

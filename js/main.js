@@ -6,12 +6,28 @@ window.SHEET_URL = 'https://script.google.com/macros/s/AKfycbzZE7Ox8vtw0feca_Kyb
 
 (function () {
    var d = document, r = d.documentElement, red = matchMedia('(prefers-reduced-motion: reduce)').matches;
-   // Theme switch (header, and the mobile menu): 'light' (the default), 'dark' or 'system' (follow the device).
+   // Theme switch (header dropdown, and the mobile menu): 'light' (the default), 'dark' or 'system' (follow the device).
    // The pick is saved in this browser; 'light' saves nothing. The colours themselves live in style.css.
    (function () {
-      var K = 'theme', bs = [].slice.call(d.querySelectorAll('.tm button[data-t]'));
+      var K = 'theme', bs = [].slice.call(d.querySelectorAll('.tm [data-t],.tdm [data-t]')),
+         dd = d.querySelector('.td'), db = dd.querySelector('.tdb'), its = [].slice.call(dd.querySelectorAll('.tdm [data-t]'));
       function cur() { var t = r.getAttribute('data-theme'); return t === 'dark' || t === 'system' ? t : 'light' }
-      function mark() { var t = cur(); bs.forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-t') === t ? 'true' : 'false') }) }
+      function mark() { var t = cur(); bs.forEach(function (b) { b.setAttribute(b.getAttribute('role') === 'menuitemradio' ? 'aria-checked' : 'aria-pressed', b.getAttribute('data-t') === t ? 'true' : 'false') }) }
+      // header dropdown
+      function isOpen() { return dd.classList.contains('open') }
+      function open() { dd.classList.add('open'); db.setAttribute('aria-expanded', 'true'); (dd.querySelector('[aria-checked="true"]') || its[0]).focus() }
+      function close(back) { if (!isOpen()) return; dd.classList.remove('open'); db.setAttribute('aria-expanded', 'false'); if (back) db.focus() }
+      db.addEventListener('click', function () { isOpen() ? close() : open() });
+      its.forEach(function (b) { b.addEventListener('click', function () { close(true) }) });
+      dd.addEventListener('keydown', function (e) {
+         var k = e.key, i = its.indexOf(d.activeElement), n = its.length;
+         if (!isOpen()) { if (e.target === db && (k === 'ArrowDown' || k === 'ArrowUp')) { e.preventDefault(); open() } return }
+         if (k === 'ArrowDown' || k === 'ArrowUp') { e.preventDefault(); its[i < 0 ? 0 : (i + (k === 'ArrowDown' ? 1 : n - 1)) % n].focus() }
+         else if (k === 'Home' || k === 'End') { e.preventDefault(); its[k === 'Home' ? 0 : n - 1].focus() }
+         else if (k === 'Escape') close(true);
+         else if (k === 'Tab') close();
+      });
+      d.addEventListener('pointerdown', function (e) { if (!dd.contains(e.target)) close() });
       function apply(t) {
          if (t === cur()) return;
          r.classList.add('notr');

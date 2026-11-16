@@ -6,26 +6,26 @@ window.SHEET_URL = 'https://script.google.com/macros/s/AKfycbzZE7Ox8vtw0feca_Kyb
 
 (function () {
    var d = document, r = d.documentElement, red = matchMedia('(prefers-reduced-motion: reduce)').matches;
-   // Theme switch (header, and the mobile menu): 'light', 'dark' or 'system' (follow the device).
-   // The pick is saved in this browser; 'system' saves nothing. The colours themselves live in style.css.
+   // Theme switch (header, and the mobile menu): 'light' (the default), 'dark' or 'system' (follow the device).
+   // The pick is saved in this browser; 'light' saves nothing. The colours themselves live in style.css.
    (function () {
       var K = 'theme', bs = [].slice.call(d.querySelectorAll('.tm button[data-t]'));
-      function cur() { var t = r.getAttribute('data-theme'); return t === 'light' || t === 'dark' ? t : 'system' }
+      function cur() { var t = r.getAttribute('data-theme'); return t === 'dark' || t === 'system' ? t : 'light' }
       function mark() { var t = cur(); bs.forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-t') === t ? 'true' : 'false') }) }
       function apply(t) {
          if (t === cur()) return;
          r.classList.add('notr');
-         if (t === 'light' || t === 'dark') r.setAttribute('data-theme', t); else r.removeAttribute('data-theme');
+         if (t === 'dark' || t === 'system') r.setAttribute('data-theme', t); else r.removeAttribute('data-theme');
          mark(); void r.offsetWidth; requestAnimationFrame(function () { r.classList.remove('notr') })
       }
       bs.forEach(function (b) {
          b.addEventListener('click', function () {
             var t = b.getAttribute('data-t'); apply(t);
-            try { if (t === 'system') localStorage.removeItem(K); else localStorage.setItem(K, t) } catch (e) { }
+            try { if (t === 'light') localStorage.removeItem(K); else localStorage.setItem(K, t) } catch (e) { }
          })
       });
       // another tab changed the theme
-      addEventListener('storage', function (e) { if (e.key === K || e.key === null) apply(e.newValue || 'system') });
+      addEventListener('storage', function (e) { if (e.key === K || e.key === null) apply(e.newValue || 'light') });
       mark();
    })();
    // project screenshots, keyed by data-preview name or domain: [file, alt text, width, height]

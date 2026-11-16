@@ -4,10 +4,10 @@
 <head>
    <meta charset="utf-8">
    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-   <meta name="color-scheme" content="light dark">
+   <meta name="color-scheme" content="light">
    <title>Harish M H — Website & Web-Application Developer</title>
-   <!-- apply a saved Light/Dark pick before the page paints; no pick = follow the device -->
-   <script>try { var t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t) } catch (e) { }</script>
+   <!-- apply a saved Dark/System pick before the page paints; no pick = light -->
+   <script>try { var t = localStorage.getItem('theme'); if (t === 'dark' || t === 'system') document.documentElement.setAttribute('data-theme', t) } catch (e) { }</script>
    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
    <link rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Aclonica&family=Amita:wght@400;700&display=swap">
@@ -65,13 +65,13 @@
             </svg>Harish M H</a>
          <div class="hr">
             <div class="tm" role="group" aria-label="Theme"><button type="button" data-t="light" title="Light theme"
-                  aria-pressed="false"><svg aria-hidden="true">
+                  aria-pressed="true"><svg aria-hidden="true">
                      <use href="#i-sun" />
                   </svg><span>Light</span></button><button type="button" data-t="dark" title="Dark theme"
                   aria-pressed="false"><svg aria-hidden="true">
                      <use href="#i-moon" />
                   </svg><span>Dark</span></button><button type="button" data-t="system"
-                  title="Match device setting" aria-pressed="true"><svg aria-hidden="true">
+                  title="Match device setting" aria-pressed="false"><svg aria-hidden="true">
                      <use href="#i-sys" />
                   </svg><span>System</span></button></div><a class="btn k" href="#contact">Let's connect</a>
          </div>
@@ -82,12 +82,12 @@
             href="#contact">Contact</a>
          <div class="tw"><span class="lb">Theme</span>
             <div class="tm" role="group" aria-label="Theme"><button type="button" data-t="light"
-                  aria-pressed="false"><svg aria-hidden="true">
+                  aria-pressed="true"><svg aria-hidden="true">
                      <use href="#i-sun" />
                   </svg><span>Light</span></button><button type="button" data-t="dark" aria-pressed="false"><svg
                      aria-hidden="true">
                      <use href="#i-moon" />
-                  </svg><span>Dark</span></button><button type="button" data-t="system" aria-pressed="true"><svg
+                  </svg><span>Dark</span></button><button type="button" data-t="system" aria-pressed="false"><svg
                      aria-hidden="true">
                      <use href="#i-sys" />
                   </svg><span>System</span></button></div>

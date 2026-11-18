@@ -999,16 +999,7 @@ section {
    color: var(--fg);
    border: 1px solid var(--ln);
    border-radius: var(--r);
-   overflow: hidden;
-   transition: background .3s, color .3s, border-color .3s
-}
-
-/* hover: the text area under the image turns GitHub-dark, same palette as the contribution card */
-.pj:hover .pd {
-   --sf: #161b22;
-   --fg: #f0f6fc;
-   --mu: #9da7b3;
-   --ln: #30363d
+   overflow: hidden
 }
 
 .pj[hidden] {
@@ -1022,8 +1013,7 @@ section {
    background: var(--hv);
    border-bottom: 1px solid var(--ln);
    overflow: hidden;
-   text-decoration: none;
-   transition: background .3s, border-color .3s
+   text-decoration: none
 }
 
 .pi img,
@@ -1062,10 +1052,7 @@ section {
    display: flex;
    flex-direction: column;
    gap: 10px;
-   padding: 20px 22px 22px;
-   background: var(--sf);
-   color: var(--fg);
-   transition: background .3s, color .3s
+   padding: 20px 22px 22px
 }
 
 .pd h3 {
@@ -1086,12 +1073,6 @@ section {
 .pd .tg span {
    font-size: 12px;
    padding: 2px 11px
-}
-
-.pd p,
-.pd .tg span,
-.pc {
-   transition: color .3s, background .3s, border-color .3s
 }
 
 .pk,

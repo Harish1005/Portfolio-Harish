@@ -44,16 +44,18 @@ window.SHEET_URL = 'https://script.google.com/macros/s/AKfycbzZE7Ox8vtw0feca_Kyb
       addEventListener('storage', function (e) { if (e.key === K || e.key === null) apply(e.newValue || 'light') });
       mark();
    })();
-   // project screenshots, keyed by data-preview name or domain: [file, alt text, width, height]
-   var IMG = {
-      'Elangovan Perumal': ['assets/images/projects/elangovan-perumal.webp', 'Elangovan Perumal website', 1500, 688],
-      'OUTLIV Cancer Care': ['assets/images/projects/outliv-cancer-care.webp', 'OUTLIV Cancer Care website', 1500, 689],
-      'aicybermagazine.com': ['assets/images/projects/ai-cyber-magazine.webp', 'AI Cyber Magazine website', 1500, 687],
-      'ramsnicefoods.com': ['assets/images/projects/rams-nice-foods.webp', 'Rams Nice Foods website', 1500, 689],
-      'thevellishop.com': ['assets/images/projects/the-velli-shop.webp', 'The Velli Shop website', 1500, 688],
-      'shoptruetribute.com': ['assets/images/projects/true-tribute.webp', 'True Tribute website', 1500, 689]
-   };
-   [].forEach.call(d.querySelectorAll('.shot'), function (a) { var raw = a.getAttribute('href'), u = raw ? raw.replace(/^https?:\/\//, '').replace(/\/$/, '') : ((a.getAttribute('data-preview') || 'Project preview')), key = a.getAttribute('data-preview') || u, m = IMG[key] || IMG[u], body = m ? '<div class="sv has"><img src="' + m[0] + '" alt="Screenshot of ' + m[1] + '" width="' + m[2] + '" height="' + m[3] + '" loading="lazy" decoding="async"></div>' : '<div class="sv"><span class="go" aria-hidden="true">\u2197</span></div>'; a.innerHTML = '<div class="win"><div class="tb"><div class="dots"><i></i><i></i><i></i></div><div class="ad"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg><span>' + u + '</span></div></div>' + body + '</div>' });
+   // Selected work filter: All / Website / Ecommerce / ERP, matched against each card's data-cat
+   (function () {
+      var tabs = [].slice.call(d.querySelectorAll('.wt button[data-f]')), cards = [].slice.call(d.querySelectorAll('.pj')), cnt = d.querySelector('.wn');
+      tabs.forEach(function (b) {
+         b.addEventListener('click', function () {
+            var f = b.getAttribute('data-f'), n = 0;
+            tabs.forEach(function (t) { t.setAttribute('aria-pressed', t === b ? 'true' : 'false') });
+            cards.forEach(function (c) { var on = f === 'all' || c.getAttribute('data-cat') === f; c.hidden = !on; if (on) { n++; c.classList.add('in') } });
+            cnt.textContent = 'Showing ' + n + ' project' + (n === 1 ? '' : 's');
+         })
+      });
+   })();
 
    function fill(el, s, dn, seed) {
       var W = el.clientWidth, H = el.clientHeight; if (!W || !H) return; var c = Math.ceil(W / s), rw = Math.ceil(H / s); el.style.gridTemplateColumns = 'repeat(' + c + ',' + s + 'px)'; el.style.gridAutoRows = s + 'px'; el._s = s; el._c = c; el.innerHTML = ''; function rnd() { seed = (seed * 9301 + 49297) % 233280; return seed / 233280 }
@@ -281,7 +283,7 @@ window.SHEET_URL = 'https://script.google.com/macros/s/AKfycbzZE7Ox8vtw0feca_Kyb
       }
       d.addEventListener('click', function (e) {
          var a = e.target.closest && e.target.closest('a[href]'); if (!a) return;
-         var h = a.getAttribute('href'), card = a.closest('article.sp'), t = card && card.querySelector('h3');
+         var h = a.getAttribute('href'), card = a.closest('article.pj'), t = card && card.querySelector('h3');
          if (/^#/.test(h)) return;
          add(A.clk, t && /^https?:/.test(h) ? 'Project: ' + t.textContent.trim() : /^mailto:/.test(h) ? 'Email' : /^tel:/.test(h) ? 'Phone call'
             : pick([[/linkedin/, 'LinkedIn'], [/github/, 'GitHub'], [/instagram/, 'Instagram'], [/wa\.me|whatsapp/, 'WhatsApp']], a.hostname, a.hostname.replace(/^www\./, '')))
